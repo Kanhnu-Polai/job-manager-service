@@ -1,4 +1,5 @@
 from dataclasses import asdict
+from flask import jsonify
 from app.models.job_repo import Job ,Application
 from flask_pymongo import PyMongo
 from app.exceptions.custom_exceptions import job_already_available_exception
@@ -14,10 +15,13 @@ class JobService:
 
     def add_job(self,data:dict):
         logger.info(f"✅ Adding Job details.....{data}")
+
+
         job = Job(
             jobId=data["jobId"],
             jobTitle=data["jobTitle"],
             companyName=data["companyName"],
+            publisher_email=data["publisherEmail"],
             applications=[Application(**app) for app in data.get("applications", [])]
         )
 
@@ -29,8 +33,27 @@ class JobService:
             logger.warning(f"❌ Job with jobId '{data['jobId']}' already exists ")
             return job_already_available_exception()
 
-    def add_application(self,application_data:dict,jobId):
-        logger.info(f"✅ Adding new application for job id ➡️{jobId}")
+    def add_application(self,application_data:dict,job_id):
+        logger.info(f"✅ Adding new application for job id ➡️{job_id}")
+        application = Application(**application_data)
+
+        result = self.mongo.db.jobs.update_one(
+            {"jobId": job_id},
+            {"$push": {"applications": asdict(application)}}
+        )
+
+        if result.matched_count == 0:
+            return jsonify({"error": f"No job found with jobId {job_id}"}), 404
+
+        return jsonify({
+            "message": f"Application added successfully to job {job_id}",
+            "application": asdict(application)
+        }), 200
+
+
+
+
+
 
 
 
