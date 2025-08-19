@@ -2,7 +2,7 @@ from dataclasses import asdict
 from flask import jsonify
 from app.models.job_repo import Job ,Application
 from flask_pymongo import PyMongo
-from app.exceptions.custom_exceptions import job_already_available_exception
+from app.exceptions.custom_exceptions import job_already_available_exception ,email_not_found_exception
 from app.utils.logger import get_logger
 from pymongo.errors import DuplicateKeyError
 
@@ -49,6 +49,33 @@ class JobService:
             "message": f"Application added successfully to job {job_id}",
             "application": asdict(application)
         }), 200
+
+
+    def get_job_applications_by_publisher_email(self,publisher_email):
+        logger.info(f"✅ Getting request form controller with publisher email ➡️{publisher_email}")
+        logger.info(f"🧿 Validating the publisher email")
+
+        # Check if email exists in DB
+        existing_publisher = self.mongo.db.jobs.find_one({"publisher_email":publisher_email})
+
+        if not existing_publisher:
+            logger.warning(f"❌ No jobs found for publisher {publisher_email}")
+            return email_not_found_exception()
+
+        logger.info(f"✅ Validation successful...")
+        logger.info(f"✅Fetch all jobs for the publisher")
+
+        jobs_info = self.mongo.db.jobs.find({"publisher_email":publisher_email})
+        job_list = []
+
+        for job in jobs_info:
+            job["_id"]=str(job["_id"])
+            job_list.append(job)
+
+        return jsonify(job_list)
+
+        
+
 
 
 

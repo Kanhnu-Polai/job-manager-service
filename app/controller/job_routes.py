@@ -71,5 +71,17 @@ def add_application():
 
 
 
+# This end points is responsible for fetching all applicants for the job publisher using email
+
+
+@app.route("/applications/<publisher_email>",methods=["GET"])
+def get_applications(publisher_email):
+    logger.info(f"✅Inside get_applications method.......  ")
+    logger.info(f"✅Received a request to find all applications for the publisher email : {publisher_email}" )
+
+    response = job_service.get_job_applications_by_publisher_email(publisher_email)
+
+    return response
+
 if __name__ == "__main__":
     app.run(debug=True, port=5000)

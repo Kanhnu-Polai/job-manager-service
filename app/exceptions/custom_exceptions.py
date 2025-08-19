@@ -23,3 +23,11 @@ def missing_fields_exception():
         "error_code": error_code,
         "error_message": error_message,
     }), 400
+
+def email_not_found_exception():
+    error_code = "JOB_MANAGER_SERVICE_1003"
+    error_message = "The provided publisher email not available in database"
+    return jsonify({
+        "error_code": error_code,
+        "error_message": error_message,
+    }), 404
