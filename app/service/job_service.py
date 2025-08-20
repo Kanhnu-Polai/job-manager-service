@@ -74,7 +74,7 @@ class JobService:
 
         return jsonify(job_list)
 
-        
+
 
 
 
